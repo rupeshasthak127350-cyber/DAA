@@ -1,0 +1,147 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <stack>
+#include <chrono>
+
+using namespace std;
+using namespace std::chrono;
+
+class Graph {
+    int V;
+    bool directed;
+    vector<vector<int>> adj;
+
+public:
+    Graph(int vertices, bool isDirected = false) {
+        V = vertices;
+        directed = isDirected;
+        adj.resize(V);
+    }
+
+    void addEdge(int u, int v) {
+        adj[u].push_back(v);
+        if (!directed)
+            adj[v].push_back(u);
+    }
+
+    void printDegrees() {
+        cout << "\nVertex Degrees:\n";
+        for (int i = 0; i < V; i++)
+            cout << "  Vertex " << i << ": " << adj[i].size() << " connection(s)\n";
+    }
+
+    // Iterative DFS using an explicit stack instead of recursion
+    vector<int> DFS(int start) {
+        vector<bool> visited(V, false);
+        vector<int> order;
+        stack<int> s;
+
+        s.push(start);
+
+        while (!s.empty()) {
+            int node = s.top();
+            s.pop();
+
+            if (visited[node])
+                continue;
+
+            visited[node] = true;
+            order.push_back(node);
+
+            // Push neighbors in reverse so traversal order feels natural
+            for (auto it = adj[node].rbegin(); it != adj[node].rend(); ++it) {
+                if (!visited[*it])
+                    s.push(*it);
+            }
+        }
+
+        return order;
+    }
+
+    vector<int> BFS(int start) {
+        vector<bool> visited(V, false);
+        vector<int> order;
+        queue<int> q;
+
+        visited[start] = true;
+        q.push(start);
+
+        while (!q.empty()) {
+            int node = q.front();
+            q.pop();
+            order.push_back(node);
+
+            for (int neighbor : adj[node]) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    q.push(neighbor);
+                }
+            }
+        }
+
+        return order;
+    }
+};
+
+void printOrder(const string &label, const vector<int> &order) {
+    cout << label << ": ";
+    for (size_t i = 0; i < order.size(); i++) {
+        cout << order[i];
+        if (i != order.size() - 1) cout << " -> ";
+    }
+    cout << " (" << order.size() << " nodes visited)\n";
+}
+
+int main() {
+    int V, E;
+    char type;
+
+    cout << "Directed or Undirected graph? (d/u): ";
+    cin >> type;
+    bool directed = (type == 'd' || type == 'D');
+
+    cout << "Enter number of vertices: ";
+    cin >> V;
+
+    Graph g(V, directed);
+
+    cout << "Enter number of edges: ";
+    cin >> E;
+
+    cout << "Enter edges (u v):\n";
+    for (int i = 0; i < E; i++) {
+        int u, v;
+        cin >> u >> v;
+        g.addEdge(u, v);
+    }
+
+    g.printDegrees();
+
+    int start;
+    cout << "\nEnter starting vertex: ";
+    cin >> start;
+
+    // DFS Time Analysis (iterative version)
+    auto startDFS = high_resolution_clock::now();
+    vector<int> dfsOrder = g.DFS(start);
+    auto endDFS = high_resolution_clock::now();
+    auto dfsTime = duration_cast<microseconds>(endDFS - startDFS);
+
+    // BFS Time Analysis
+    auto startBFS = high_resolution_clock::now();
+    vector<int> bfsOrder = g.BFS(start);
+    auto endBFS = high_resolution_clock::now();
+    auto bfsTime = duration_cast<microseconds>(endBFS - startBFS);
+
+    cout << "\n";
+    printOrder("DFS Traversal", dfsOrder);
+    printOrder("BFS Traversal", bfsOrder);
+
+    cout << "\nExecution Time:";
+    cout << "\nDFS: " << dfsTime.count() << " microseconds";
+    cout << "\nBFS: " << bfsTime.count() << " microseconds";
+    cout << endl;
+
+    return 0;
+}
