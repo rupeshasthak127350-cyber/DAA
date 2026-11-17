@@ -1,8 +1,10 @@
+
 #include <iostream>
 #include <vector>
 #include <climits>
 using namespace std;
 
+// Find the minimum key value
 int findMin(vector<int>& key, vector<bool>& used, int V)
 {
     int minValue = INT_MAX;
@@ -19,19 +21,23 @@ int findMin(vector<int>& key, vector<bool>& used, int V)
     return index;
 }
 
+// Function to implement Prim's Algorithm
 void prim(vector<vector<int>>& graph, int V)
 {
+    // Initialize key, parent and used arrays
     vector<int> key(V, INT_MAX);
     vector<int> parent(V, -1);
     vector<bool> used(V, false);
 
     key[0] = 0;
 
+    // Find Minimum Spanning Tree
     for (int count = 0; count < V - 1; count++)
     {
         int u = findMin(key, used, V);
         used[u] = true;
 
+        // Update adjacent vertices
         for (int v = 0; v < V; v++)
         {
             if (graph[u][v] != 0 &&
@@ -44,6 +50,7 @@ void prim(vector<vector<int>>& graph, int V)
         }
     }
 
+    // Calculate total minimum cost
     int total = 0;
 
     cout << "Edges in Minimum Spanning Tree:\n";
@@ -62,10 +69,12 @@ void prim(vector<vector<int>>& graph, int V)
     cout << "Minimum cost = " << total << endl;
 }
 
+// Main function
 int main()
 {
     int V = 6;
 
+    // Define the adjacency matrix
     vector<vector<int>> graph =
     {
         {0, 4, 0, 7, 0, 0},
@@ -76,6 +85,7 @@ int main()
         {0, 0, 8, 0, 9, 0}
     };
 
+    // Call Prim's Algorithm
     prim(graph, V);
 
     return 0;
