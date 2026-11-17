@@ -1,71 +1,70 @@
+
 #include <iostream>
 #include <vector>
-#include <chrono>
-#include <string>
+#include <algorithm>
+#include <climits>
 using namespace std;
-using namespace std::chrono;
 
-// Linear Search: O(n)
-int linearSearch(const vector<int>& arr, int key) {
-    for (size_t i = 0; i < arr.size(); i++) {
-        if (arr[i] == key) return (int)i;
-    }
-    return -1;
-}
+int main()
+{
+    int n = 4;  // Number of cities
 
-// Binary Search (array must be sorted): O(log n)
-int binarySearch(const vector<int>& arr, int key) {
-    int low = 0, high = (int)arr.size() - 1;
+    // Cost matrix representing distance between cities
+    int cost[4][4] = {
+        {0, 10, 15, 20},
+        {10, 0, 35, 25},
+        {15, 35, 0, 30},
+        {20, 25, 30, 0}
+    };
 
-    while (low <= high) {
-        int mid = low + (high - low) / 2;   // avoids overflow
+    vector<int> cities;
 
-        if (arr[mid] == key) return mid;
-        else if (arr[mid] < key) low = mid + 1;
-        else high = mid - 1;
-    }
-    return -1;
-}
-
-// Times any search function, averaged over several runs
-template <typename Func>
-double measureNs(Func search, const vector<int>& arr, int key, int &pos, int runs = 1000) {
-    auto start = high_resolution_clock::now();
-    for (int i = 0; i < runs; i++) {
-        pos = search(arr, key);
-    }
-    auto stop = high_resolution_clock::now();
-    return duration_cast<nanoseconds>(stop - start).count() / (double)runs;
-}
-
-void report(const string& name, int pos, double ns) {
-    cout << "\n" << name << ": "
-         << (pos == -1 ? "Not Found" : "Found at index " + to_string(pos))
-         << "\nAverage time: " << ns << " ns\n";
-}
-
-int main() {
-    const int n = 100000;
-    vector<int> arr(n);
-    for (int i = 0; i < n; i++) arr[i] = i + 1;   // sorted: 1..n
-
-    int key;
-    cout << "Enter element to search (1 to " << n << "): ";
-    if (!(cin >> key)) {
-        cout << "Invalid input.\n";
-        return 1;
+    // Store all cities except starting city 0
+    for (int i = 1; i < n; i++)
+    {
+        cities.push_back(i);
     }
 
-    int pos;
+    int minCost = INT_MAX;  // Store minimum cost
+    vector<int> bestPath;  // Store best route
 
-    double t1 = measureNs(linearSearch, arr, key, pos);
-    report("Linear Search", pos, t1);
+    // Generate all possible city arrangements
+    do
+    {
+        int currentCost = 0;
+        int k = 0;  // Start from city 0
 
-    double t2 = measureNs(binarySearch, arr, key, pos);
-    report("Binary Search", pos, t2);
+        // Calculate cost of current route
+        for (int i = 0; i < cities.size(); i++)
+        {
+            currentCost += cost[k][cities[i]];
+            k = cities[i];
+        }
 
-    if (t2 > 0)
-        cout << "\nBinary search was about " << t1 / t2 << "x faster.\n";
+        // Add cost to return to starting city
+        currentCost += cost[k][0];
 
-    return 0;
+        // Check if current route has minimum cost
+        if (currentCost < minCost)
+        {
+            minCost = currentCost;
+            bestPath = cities;
+        }
+
+    } while (next_permutation(cities.begin(), cities.end()));
+
+    // Display minimum travelling cost
+    cout << "Minimum Cost: " << minCost << endl;
+
+    // Display the best travelling path
+    cout << "Best Path: 0 ";
+
+    for (int i = 0; i < bestPath.size(); i++)
+    {
+        cout << "-> " << bestPath[i];
+    }
+
+    cout << " -> 0" << endl;
+
+    return 0;  // End of program
 }
